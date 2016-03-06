@@ -25,7 +25,7 @@ class Card(object):
     self.fields['color'] = color
 
   def __str__(self):
-    return "{number} {color} {filling} {shape}".format(**self.fields)
+    return self.__repr__()
 
   def __repr__(self):
     return "{number} {color} {filling} {shape}".format(**self.fields)
@@ -36,6 +36,14 @@ def main():
   # TODO: Get these cards via image detection :P
   # e.g. this is from here:
   # https://www.dropbox.com/s/77ut9dkv9hq4pki/Screenshot%202016-03-05%2018.48.31.png?dl=0
+
+  # more options
+  # https://www.dropbox.com/s/k6o7snm1jl7jg5e/Screenshot%202016-03-05%2018.56.06.png?dl=0
+  # http://i.stack.imgur.com/ykW6n.png
+  # https://whieldon.files.wordpress.com/2013/08/set_solid.png
+
+  # maybe
+  # http://www.pyimagesearch.com/2014/10/20/finding-shapes-images-using-python-opencv/
   cards.add(Card("oval", 2, "empty", "green"))
   cards.add(Card("wiggle", 1, "empty", "green"))
   cards.add(Card("diamond", 3, "lines", "green"))
