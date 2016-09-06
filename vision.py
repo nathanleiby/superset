@@ -2,9 +2,10 @@ import numpy as np
 import numpy
 import cv2
 from matplotlib import pyplot as plt
+import os
 
 # Show images on a plot
-def display(imgs_defs):
+def display(img_defs):
   fig = plt.figure()
   for idx, i in enumerate(img_defs):
     plt.subplot(4,2,idx+1)
@@ -68,27 +69,56 @@ def detect_count(img_bw):
   amount = len(cntrs)
   return amount
 
-img = cv2.imread("images/single-card/green-oval.png") # load in color
-edges = cv2.Canny(img,100,200)
-normalized = normalize_colors(img)
-normalized_edges = cv2.Canny(normalized,100,200)
-bw = to_bw(img)
+def analyze(image_path, expected=None):
+  print "Analyzing", image_path
+  img = cv2.imread(image_path) # load in color
+  edges = cv2.Canny(img,100,200)
+  normalized = normalize_colors(img)
+  normalized_edges = cv2.Canny(normalized,100,200)
+  bw = to_bw(img)
 
+  # non images
+  count = detect_count(bw)
+  # print "Count = ", count
+  shading = None
+  shape = None
+  color = None
 
-# non images
-count = detect_count(bw)
-print "Count = ", count
+  actual = dict(color=color, shading=shading, shape=shape, count=count)
 
-debug = False
-if debug:
-  img_defs = [
-    dict(title='original', image=img),
-    dict(title='edges', image=edges),
-    dict(title='normalized', image=normalized),
-    dict(title='normalized edges', image=normalized_edges),
-    dict(title='bw', image=bw),
-  ]
-  display(img_defs)
+  # Print out images to debug the computer vision steps
+  debug = False
+  if debug:
+    defs = [
+      dict(title='original', image=img),
+      dict(title='edges', image=edges),
+      dict(title='normalized', image=normalized),
+      dict(title='normalized edges', image=normalized_edges),
+      dict(title='bw', image=bw),
+    ]
+    display(defs)
+
+  # Compare actual results VS expected results
+  if expected:
+    error = False
+    for k, v in expected.iteritems():
+      if actual.get(k) != v:
+        print "\t{}: actual = {} (expected = {})".format(k, actual[k], expected[k])
+
+  print ""
+
+def determine_expected(filename):
+  name, ext = filename.split('.')
+  color, shading, shape, count = name.split('-')
+  count = int(count)
+  return dict(color=color, shading=shading, shape=shape, count=count)
+
+dirname='./images/single-card/'
+for filename in os.listdir(dirname):
+  fullpath = os.path.join(dirname, filename)
+  expected = determine_expected(filename)
+  analyze(fullpath, expected)
+  # analyze("images/single-card/green-oval.png")
 
 ## only closes plot from GUI
 #plt.show()

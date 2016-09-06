@@ -18,6 +18,11 @@ Superset
 - OpenCV Python examples
 	- https://github.com/opencv/opencv/tree/master/samples/python
 
+## TODOS
+
+- `count` detection is less reliabe for diamonds and shaded
+- add datasets (to GH repo or in Dropbox/GDrive)
+
 ## Setup
 
 **Python Setup**
@@ -41,7 +46,7 @@ brew tap homebrew/science
 brew install opencv
 ```
 
-Set up so Python can import y creating a couple of symlinks.
+Set up so Python can import by creating a couple of symlinks.
 
 ```
 ln /usr/local/lib/python2.7/site-packages/cv.py cv.py
