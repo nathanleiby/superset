@@ -6,9 +6,10 @@ import os
 
 # Show images on a plot
 def display(img_defs):
-  fig = plt.figure()
+  fig = plt.figure(figsize=(10,10))
+  horiz = len(img_defs) / 2 + 1
   for idx, i in enumerate(img_defs):
-    plt.subplot(4,2,idx+1)
+    plt.subplot(horiz,2,idx+1)
     plt.imshow(i['image'],cmap = 'gray')
     plt.title(i['title']), plt.xticks([]), plt.yticks([])
 
@@ -45,7 +46,9 @@ def detect_count(img_bw):
   F = numpy.zeros(img_bw.shape, dtype=numpy.uint8)
   MASK = numpy.zeros(img_bw.shape, dtype=numpy.uint8)
   areas = [cv2.contourArea(cnt) for cnt in cntrs]
+  print "AREAS:", areas
   t = numpy.mean(filter(lambda x: x > 50, areas))
+  print "mean done"
   t = t * 0.9
   MASKrect = None
   MASKcnt = None
@@ -57,6 +60,7 @@ def detect_count(img_bw):
       if (not wasMasked):
         wasMasked = True
         cv2.drawContours(MASK, [cnt], 0, (255), thickness=-1)
+        print "creating masks"
         MASKcnt = cnt
         MASKrect = cv2.boundingRect(cnt)
 
@@ -67,36 +71,77 @@ def detect_count(img_bw):
                                   cv2.CHAIN_APPROX_SIMPLE)
 
   amount = len(cntrs)
-  return amount
+  return amount, MASK, MASKrect, MASKcnt
 
+def cut_masks(img, img_bw, img_mask, mask_rect):
+  rect = [0, 0, 0, 0]
+  rect[0] = mask_rect[0] - 5
+  rect[1] = mask_rect[1] - 5
+  rect[2] = mask_rect[0] + mask_rect[2] + 5
+  rect[3] = mask_rect[1] + mask_rect[3] + 5
+  CutI = img[rect[1]:rect[3], rect[0]:rect[2]]
+  CutBW = img_bw[rect[1]:rect[3], rect[0]:rect[2]]
+  CutM = img_mask[rect[1]:rect[3], rect[0]:rect[2]]
+  return CutI, CutBW, CutM
+
+def find_shading(cut_bw, cut_mask):
+  S = cv2.bitwise_and(cut_bw, cut_mask)
+  E = cv2.Canny(S, 90, 200, apertureSize=3)
+  #cv2.imshow('Edge', E)
+  nE = numpy.count_nonzero(E)
+  nM = numpy.count_nonzero(cut_mask)
+  dEM = float(nE) / float(nM)
+  print "Mask %d, Edge %d, div %f" % (nM, nE, dEM)
+  shading = ""
+  if (dEM < 0.08):
+    print "Full"
+    shading = 'full' # solid
+  elif (dEM > 0.17):
+    print "Striped"
+    shading = 'striped'
+  else:
+    print "Open"
+    shading = 'open'
+  return shading
+
+def find_shading2(img):
+  # edges = cv2.Canny(img,100,200)
+  edges = cv2.Canny(img, 100, 200, apertureSize=3)
+  nE = numpy.count_nonzero(edges)
+  print "non-zero edges", nE
+
+# ----------------------------------------------
+# Run the analysis and interpret its results
+# ----------------------------------------------
 def analyze(image_path, expected=None):
+  # if not expected or expected.get('shading') != 'open':
+    # return
+
   print "Analyzing", image_path
   img = cv2.imread(image_path) # load in color
   edges = cv2.Canny(img,100,200)
+  edgesAperture = cv2.Canny(img,90,200,apertureSize=3)
   normalized = normalize_colors(img)
   normalized_edges = cv2.Canny(normalized,100,200)
-  bw = to_bw(img)
+  img_bw = to_bw(img)
+  bw_edges = cv2.Canny(img_bw,100,200)
 
-  # non images
-  count = detect_count(bw)
+  # find count
+  # TODO: separate mask creation from counting?
+  # TODO: Determine why 'detect_count' is failing to return masks in all cases
+  count, img_mask, mask_rect, mask_cnt = detect_count(img_bw)
+
+  cut_i, cut_bw, cut_m = cut_masks(img, img_bw, img_mask, mask_rect)
+
+  # find shading
+  shading = find_shading(cut_bw, cut_m)
+  # shading = find_shading2(img_bw)
+  # shading = None
+
   # print "Count = ", count
-  shading = None
   shape = None
   color = None
-
   actual = dict(color=color, shading=shading, shape=shape, count=count)
-
-  # Print out images to debug the computer vision steps
-  debug = False
-  if debug:
-    defs = [
-      dict(title='original', image=img),
-      dict(title='edges', image=edges),
-      dict(title='normalized', image=normalized),
-      dict(title='normalized edges', image=normalized_edges),
-      dict(title='bw', image=bw),
-    ]
-    display(defs)
 
   # Compare actual results VS expected results
   if expected:
@@ -107,6 +152,27 @@ def analyze(image_path, expected=None):
 
   print ""
 
+  # Print out images to debug the computer vision steps
+  do_display = True
+  # do_display = False
+  if do_display:
+    defs = [
+      dict(title='original', image=img),
+      dict(title='normalized', image=normalized),
+      dict(title='edges', image=edges),
+      dict(title='edges (normalized)', image=normalized_edges),
+      dict(title='edges with apertureSize', image=edgesAperture),
+      dict(title='bw', image=img_bw),
+      dict(title='bw_edges', image=bw_edges),
+      dict(title='mask', image=img_mask),
+      dict(title='cut_i', image=cut_i),
+      dict(title='cut_bw', image=cut_bw),
+      dict(title='cut_m', image=cut_m),
+    ]
+
+    # Open CV image display
+    display(defs)
+
 def determine_expected(filename):
   name, ext = filename.split('.')
   color, shading, shape, count = name.split('-')
@@ -115,19 +181,22 @@ def determine_expected(filename):
 
 dirname='./images/single-card/'
 for filename in os.listdir(dirname):
+  if not filename.endswith('.png'):
+    continue
   fullpath = os.path.join(dirname, filename)
   expected = determine_expected(filename)
   analyze(fullpath, expected)
+ #  try:
+    # analyze(fullpath, expected)
+  # except Exception as e:
+    # print "failed to analyze"
+    # print e
   # analyze("images/single-card/green-oval.png")
 
-## only closes plot from GUI
-#plt.show()
-
-## Open CV image display
-# win = cv2.namedWindow('normalized')
-# cv2.imshow('normalized', normalized)
 # k = cv2.waitKey(0)
 # if k == 27:         # wait for ESC key to exit
   # cv2.destroyAllWindows()
+## only closes plot from GUI
+#plt.show()
 
 
