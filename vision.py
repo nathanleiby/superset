@@ -79,14 +79,16 @@ bw = to_bw(img)
 count = detect_count(bw)
 print "Count = ", count
 
-img_defs = [
-  dict(title='original', image=img),
-  dict(title='edges', image=edges),
-  dict(title='normalized', image=normalized),
-  dict(title='normalized edges', image=normalized_edges),
-  dict(title='bw', image=bw),
-]
-display(img_defs)
+debug = False
+if debug:
+  img_defs = [
+    dict(title='original', image=img),
+    dict(title='edges', image=edges),
+    dict(title='normalized', image=normalized),
+    dict(title='normalized edges', image=normalized_edges),
+    dict(title='bw', image=bw),
+  ]
+  display(img_defs)
 
 ## only closes plot from GUI
 #plt.show()
