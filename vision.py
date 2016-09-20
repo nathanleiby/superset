@@ -4,6 +4,9 @@ import cv2
 from matplotlib import pyplot as plt
 import os
 
+DO_DISPLAY = False
+# DO_DISPLAY = True
+
 # Show images on a plot
 def display(img_defs):
   fig = plt.figure(figsize=(10,10))
@@ -46,9 +49,7 @@ def detect_count(img_bw):
   F = numpy.zeros(img_bw.shape, dtype=numpy.uint8)
   MASK = numpy.zeros(img_bw.shape, dtype=numpy.uint8)
   areas = [cv2.contourArea(cnt) for cnt in cntrs]
-  print "AREAS:", areas
   t = numpy.mean(filter(lambda x: x > 50, areas))
-  print "mean done"
   t = t * 0.9
   MASKrect = None
   MASKcnt = None
@@ -60,7 +61,6 @@ def detect_count(img_bw):
       if (not wasMasked):
         wasMasked = True
         cv2.drawContours(MASK, [cnt], 0, (255), thickness=-1)
-        print "creating masks"
         MASKcnt = cnt
         MASKrect = cv2.boundingRect(cnt)
 
@@ -91,16 +91,13 @@ def find_shading(cut_bw, cut_mask):
   nE = numpy.count_nonzero(E)
   nM = numpy.count_nonzero(cut_mask)
   dEM = float(nE) / float(nM)
-  print "Mask %d, Edge %d, div %f" % (nM, nE, dEM)
+  # print "Mask %d, Edge %d, div %f" % (nM, nE, dEM)
   shading = ""
   if (dEM < 0.08):
-    print "Full"
     shading = 'full' # solid
   elif (dEM > 0.17):
-    print "Striped"
     shading = 'striped'
   else:
-    print "Open"
     shading = 'open'
   return shading
 
@@ -109,6 +106,38 @@ def find_shading2(img):
   edges = cv2.Canny(img, 100, 200, apertureSize=3)
   nE = numpy.count_nonzero(edges)
   print "non-zero edges", nE
+
+
+def find_color(img, cut_i, cut_bw, cut_m):
+  S = cv2.bitwise_and(cut_bw, cut_m)
+  S = cv2.bitwise_and(cut_i, cut_i, mask=S)
+  #cv2.imshow('VS', S)
+  #ShowHist(S, self.cardInfo['color'])
+  HSV = cv2.cvtColor(S, cv2.COLOR_BGR2HSV)
+  H = HSV[:, :, 0]
+  nG = numpy.count_nonzero(cv2.inRange(H, 25, 90))
+  nP = numpy.count_nonzero(cv2.inRange(H, 140, 170))
+  nR = numpy.count_nonzero(cv2.inRange(H, 170, 255))
+  C = ['red', 'green', 'purple']
+  nC = [nR, nG, nP]
+  i = numpy.argmax(nC)
+  return C[i]
+
+
+def find_shape(mask_cnt):
+  cnt = mask_cnt
+  mmnts = cv2.moments(cnt)
+  hu = cv2.HuMoments(mmnts)
+  #print cv2.contourArea(cnt)
+  symbol = ""
+  if (hu[0] < 0.207):
+    symbol = 'oval'
+  elif (hu[0] > 0.23):
+    symbol = 'squiggle'
+  else:
+    symbol = 'diamond'
+
+  return symbol
 
 # ----------------------------------------------
 # Run the analysis and interpret its results
@@ -128,19 +157,14 @@ def analyze(image_path, expected=None):
 
   # find count
   # TODO: separate mask creation from counting?
-  # TODO: Determine why 'detect_count' is failing to return masks in all cases
+  # TODO: Determine why 'detect_count' is failing to return masks in some cases
+  #     -> happens if no `areas` found in `detect_count`
   count, img_mask, mask_rect, mask_cnt = detect_count(img_bw)
-
   cut_i, cut_bw, cut_m = cut_masks(img, img_bw, img_mask, mask_rect)
 
-  # find shading
   shading = find_shading(cut_bw, cut_m)
-  # shading = find_shading2(img_bw)
-  # shading = None
-
-  # print "Count = ", count
-  shape = None
-  color = None
+  color = find_color(img, cut_i, cut_bw, cut_m)
+  shape = find_shape(mask_cnt)
   actual = dict(color=color, shading=shading, shape=shape, count=count)
 
   # Compare actual results VS expected results
@@ -153,9 +177,7 @@ def analyze(image_path, expected=None):
   print ""
 
   # Print out images to debug the computer vision steps
-  do_display = True
-  # do_display = False
-  if do_display:
+  if DO_DISPLAY:
     defs = [
       dict(title='original', image=img),
       dict(title='normalized', image=normalized),
@@ -179,13 +201,104 @@ def determine_expected(filename):
   count = int(count)
   return dict(color=color, shading=shading, shape=shape, count=count)
 
-dirname='./images/single-card/'
-for filename in os.listdir(dirname):
-  if not filename.endswith('.png'):
-    continue
-  fullpath = os.path.join(dirname, filename)
-  expected = determine_expected(filename)
-  analyze(fullpath, expected)
+def main():
+	SINGLE = False
+	GAME = True
+
+  # single card analysis
+	if SINGLE:
+		dirname='./images/single-card/'
+		for filename in os.listdir(dirname):
+			if not filename.endswith('.png'):
+				continue
+			fullpath = os.path.join(dirname, filename)
+			expected = determine_expected(filename)
+			analyze(fullpath, expected)
+
+  # multi card analysis -- split into single cards
+	if GAME:
+		dirname='./images/game/'
+		for i in [1,2,3]:
+			# if i != 3:
+				# continue
+			fullpath = os.path.join(dirname, "game00{}.jpg".format(i))
+			findCards(fullpath)
+
+
+
+COLOR_LIST = [
+  (0, 0, 255),
+  (0, 255, 0),
+  (255, 0, 0),
+  (0, 255, 255),
+  (255, 255, 0),
+  (255, 0, 255)
+]
+
+def findCards(fullpath):
+  threshold = 115
+  defs = []
+  I = cv2.imread(fullpath)
+  defs.append(dict(title='original', image=I))
+
+	# expected dimensions before: 2000px x 3000px
+  I = cv2.resize(numpy.rot90(I), (0, 0,), fx=0.5, fy=0.5)
+  defs.append(dict(title='rotated', image=I))
+
+  GRAY = cv2.cvtColor(I, cv2.COLOR_BGR2GRAY)
+  defs.append(dict(title='gray', image=GRAY))
+
+  BW = cv2.threshold(GRAY, threshold, 255, cv2.THRESH_BINARY)[1]
+
+  defs.append(dict(title='bw', image=BW))
+
+  #BW = numpy.invert(BW)
+  BWt = BW.copy()
+  cntrs, hircy = cv2.findContours(BWt,
+                                  cv2.RETR_EXTERNAL,    # cv2.RETR_TREE,
+                                   cv2.CHAIN_APPROX_SIMPLE)
+  F = numpy.zeros(BW.shape, dtype=numpy.uint8)
+  # MASK = numpy.zeros(BW.shape, dtype=numpy.uint8)
+  areas = [cv2.contourArea(cnt) for cnt in cntrs]
+  t = numpy.mean(filter(lambda x: x > 50, areas))
+  t = t * 0.50 # decreasing from .9 to .5 made this work better with a tilted image
+  # MASKrect = None
+  # MASKcnt = None
+  # wasMasked = False
+  defs = []
+  cardRects = []
+  croppedCards = []
+  for idx, cnt in enumerate(cntrs):
+    if (areas[idx] > t):
+      # thickness -1 will fill the conntours
+      cv2.drawContours(F, [cnt], 0, (255), thickness=-1)
+      rect = cv2.boundingRect(cnt)
+      cardRects.append(rect)
+      print "RECT", rect
+      cv2.rectangle(I, (rect[0], rect[1]),
+                    (rect[2] + rect[0], rect[3] + rect[1]), COLOR_LIST[idx%6],
+                    thickness=2)
+      y1, y2 = rect[1], rect[1]+rect[3]
+      x1, x2 = rect[0], rect[0]+rect[2]
+
+      cropped = I[y1:y2, x1:x2]
+      croppedCards.append(cropped)
+      # defs.append(cropped)
+  print "Number rects found = ", len(cardRects)
+
+  for i, c in enumerate(croppedCards):
+    cv2.imshow('Image'+str(i), c)
+  cv2.waitKey(0)
+  cv2.destroyAllWindows()
+  # defs.append(dict(title='f', image=F))
+  # defs.append(dict(title='outlines', image=I))
+  # display(defs)
+  # return 12 sliced images, to pass to single card analysis
+  return cardRects
+
+if __name__ == "__main__":
+  main()
+
  #  try:
     # analyze(fullpath, expected)
   # except Exception as e:
