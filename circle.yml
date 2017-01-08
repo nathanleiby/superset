@@ -1,10 +1,10 @@
 # from https://github.com/lessons-of-k4zzk/lessons-opencv/tree/3225754c14a2408b058a30a214e6d7116541ad07
 dependencies:
   pre:
-    - sudo apt-get -yV update
-    - sudo apt-get -yV install cmake libeigen3-dev
-    - sudo apt-get -yV install opencl-headers libtbb-dev
-    - sudo apt-get -yV install libjpeg-dev libjasper-dev libpng++-dev libtiff-dev libopenexr-dev libwebp-dev
+    - apt-get -y update
+    - apt-get -y install cmake libeigen3-dev
+    - apt-get -y install opencl-headers libtbb-dev
+    - apt-get -y install libjpeg-dev libjasper-dev libpng++-dev libtiff-dev libopenexr-dev libwebp-dev
     - bash install-opencv-2.4.12.sh
   post:
     - bash print_cv_version.sh
