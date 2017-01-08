@@ -201,31 +201,6 @@ def determine_expected(filename):
   count = int(count)
   return dict(color=color, shading=shading, shape=shape, count=count)
 
-def main():
-	SINGLE = False
-	GAME = True
-
-  # single card analysis
-	if SINGLE:
-		dirname='./images/single-card/'
-		for filename in os.listdir(dirname):
-			if not filename.endswith('.png'):
-				continue
-			fullpath = os.path.join(dirname, filename)
-			expected = determine_expected(filename)
-			analyze(fullpath, expected)
-
-  # multi card analysis -- split into single cards
-	if GAME:
-		dirname='./images/game/'
-		for i in [1,2,3]:
-			# if i != 3:
-				# continue
-			fullpath = os.path.join(dirname, "game00{}.jpg".format(i))
-			findCards(fullpath)
-
-
-
 COLOR_LIST = [
   (0, 0, 255),
   (0, 255, 0),
@@ -297,7 +272,22 @@ def findCards(fullpath):
   return cardRects
 
 if __name__ == "__main__":
-  main()
+  SINGLE = False
+  if SINGLE:
+    # single card analysis
+    dirname='./images/single-card/'
+    for filename in os.listdir(dirname):
+      if not filename.endswith('.png'):
+        continue
+      fullpath = os.path.join(dirname, filename)
+      expected = determine_expected(filename)
+      analyze(fullpath, expected)
+  else:
+    dirname='./images/game/'
+    # multi card analysis -- split into single cards
+    for i in [1,2,3]:
+      fullpath = os.path.join(dirname, "game00{}.jpg".format(i))
+      findCards(fullpath)
 
  #  try:
     # analyze(fullpath, expected)
