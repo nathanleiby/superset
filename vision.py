@@ -195,6 +195,8 @@ def analyze(image_path, expected=None):
     # Open CV image display
     display(defs)
 
+  return actual
+
 def determine_expected(filename):
   name, ext = filename.split('.')
   color, shading, shape, count = name.split('-')
