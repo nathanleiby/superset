@@ -286,10 +286,10 @@ def findCards(fullpath):
       # defs.append(cropped)
   print "Number rects found = ", len(cardRects)
 
-  for i, c in enumerate(croppedCards):
-    cv2.imshow('Image'+str(i), c)
-  cv2.waitKey(0)
-  cv2.destroyAllWindows()
+#   for i, c in enumerate(croppedCards):
+#     cv2.imshow('Image'+str(i), c)
+#   cv2.waitKey(0)
+#   cv2.destroyAllWindows()
   # defs.append(dict(title='f', image=F))
   # defs.append(dict(title='outlines', image=I))
   # display(defs)
