@@ -1,7 +1,10 @@
 import numpy as np
 import numpy
 import cv2
-from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 import os
 
 DO_DISPLAY = False
