@@ -10,6 +10,7 @@ dependencies:
     - bash print_cv_version.sh
   cache_directories:
     - 2.4.12.tar.gz
+    - /usr/local/include/opencv2
 
 test:
   override:
