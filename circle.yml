@@ -1,7 +1,7 @@
 dependencies:
   pre:
     - sudo apt-get -y update
-    - sudo apt-get install -y python-opencv
+    - sudo apt-get install -y python-opencv libopencv-dev
     # copy opencv (cv.so, cv2.py) to the virtualenv
     - cp /usr/lib/python2.7/dist-packages/cv* $VIRTUAL_ENV/lib/python2.7/site-packages/
   post:
