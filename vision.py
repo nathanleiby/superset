@@ -1,10 +1,13 @@
-import numpy as np
+import os
+import sys
+
+import argparse
 import cv2
 import matplotlib
-matplotlib.use('Agg')
+if os.getenv("MATPLOTLIB_USE_AGG"):
+    matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
-import os
+import numpy as np
 
 DO_DISPLAY = False
 
@@ -154,11 +157,7 @@ def find_shape(mask_cnt):
 # ----------------------------------------------
 
 
-def analyze(image_path, expected=None):
-    # if not expected or expected.get('shading') != 'open':
-        # return
-
-    print "Analyzing", image_path
+def analyze(image_path, expected=None, do_display=False):
     img = cv2.imread(image_path)  # load in color
     edges = cv2.Canny(img, 100, 200)
     edgesAperture = cv2.Canny(img, 90, 200, apertureSize=3)
@@ -186,10 +185,8 @@ def analyze(image_path, expected=None):
                 tmpl = "\t{}: actual = {} (expected = {})"
                 print tmpl.format(k, actual[k], expected[k])
 
-    print ""
-
     # Print out images to debug the computer vision steps
-    if DO_DISPLAY:
+    if do_display:
         defs = [
             dict(title='original', image=img),
             dict(title='normalized', image=normalized),
@@ -211,6 +208,7 @@ def analyze(image_path, expected=None):
 
 
 def determine_expected(filename):
+    filename = filename.split('/')[-1]
     name, ext = filename.split('.')
     color, shading, shape, count = name.split('-')
     count = int(count)
@@ -268,7 +266,6 @@ def findCards(fullpath):
             cv2.drawContours(F, [cnt], 0, (255), thickness=-1)
             rect = cv2.boundingRect(cnt)
             cardRects.append(rect)
-            print "RECT", rect
             cv2.rectangle(
                 I,
                 (rect[0],
@@ -287,7 +284,6 @@ def findCards(fullpath):
             cropped = I[y1:y2, x1:x2]
             croppedCards.append(cropped)
             # defs.append(cropped)
-    print "Number rects found = ", len(cardRects)
 
 #   for i, c in enumerate(croppedCards):
 #     cv2.imshow('Image'+str(i), c)
@@ -301,22 +297,34 @@ def findCards(fullpath):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f',
+                        '--file',
+                        type=str,
+                        required=True,
+                        help="path to image file")
+    parser.add_argument('-c',
+                        '--cv-type',
+                        type=str,
+                        default='find',
+                        help="computer vision type: 'find' or 'analyze'")
+    parser.add_argument('--display',
+                        action="store_true",
+                        default=False,
+                        help="display analysis in pop-up window.")
+    args = parser.parse_args()
+    if not os.path.exists(args.file) or not os.path.isfile(args.file):
+        print "Invalid file '{}'".format(args.file)
+        sys.exit(1)
+
     # TODO: take args to:
-    #   - do run of single cards vs mutliple cards ('game')
     #   - display analysis in separate window
-    SINGLE = False
-    if SINGLE:
-        # single card analysis
-        dirname = './images/single-card/'
-        for filename in os.listdir(dirname):
-            if not filename.endswith('.png'):
-                continue
-            fullpath = os.path.join(dirname, filename)
-            expected = determine_expected(filename)
-            analyze(fullpath, expected)
+    if args.cv_type == 'analyze':
+        out = analyze(args.file, do_display=args.display)
+        print "Analysis of '{}':".format(args.file)
+        print(out)
     else:
-        dirname = './images/game/'
-        # multi card analysis -- split into single cards
-        for i in [1, 2, 3]:
-            fullpath = os.path.join(dirname, "game00{}.jpg".format(i))
-            findCards(fullpath)
+        cardRects = findCards(args.file)
+        print "Number rects found = ", len(cardRects)
+        for c in cardRects:
+            print(c)

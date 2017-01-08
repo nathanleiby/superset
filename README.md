@@ -45,6 +45,26 @@ make test
 make run
 ```
 
+
+**Find** all cards in an image:
+
+```
+python vision.py -c find -f images/game/game001.jpg
+```
+
+**Analyze** a single card:
+
+```
+python vision.py -c analyze -f images/single-card/green-full-oval-1.png
+```
+
+You can pass the `--display` flag to open a window with images analsis steps.
+
+```
+python vision.py -c analyze -f images/single-card/green-full-oval-1.png --display
+```
+
+
 -----------
 
 ## TODOS
