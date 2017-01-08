@@ -13,4 +13,4 @@ dependencies:
 
 test:
   override:
-    - python vision_test.py -v
+    - nosetests .
