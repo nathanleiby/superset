@@ -127,3 +127,8 @@ def ExampleGame():
     g.addCard(Card("diamond", 3, "empty", "green"))
 
     return g
+
+
+if __name__ == "__main__":
+    g = ExampleGame()
+    g.solve()

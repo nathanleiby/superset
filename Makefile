@@ -17,5 +17,5 @@ nose: deps
 test: deps lint nose
 
 run: deps
-	python main.py
+	python game.py
 	python vision.py
