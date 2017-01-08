@@ -64,6 +64,12 @@ You can pass the `--display` flag to open a window with images analsis steps.
 python vision.py -c analyze -f images/single-card/green-full-oval-1.png --display
 ```
 
+It's also possible to pass a directory.
+`vision.py` will iterate over all `.png` images in that directory.
+
+```
+python vision.py -c analyze -f images/single-card/
+```
 
 -----------
 

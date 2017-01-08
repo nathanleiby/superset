@@ -313,18 +313,26 @@ if __name__ == "__main__":
                         default=False,
                         help="display analysis in pop-up window.")
     args = parser.parse_args()
-    if not os.path.exists(args.file) or not os.path.isfile(args.file):
+    if not os.path.exists(args.file):
         print "Invalid file '{}'".format(args.file)
         sys.exit(1)
 
-    # TODO: take args to:
-    #   - display analysis in separate window
-    if args.cv_type == 'analyze':
-        out = analyze(args.file, do_display=args.display)
-        print "Analysis of '{}':".format(args.file)
-        print(out)
-    else:
-        cardRects = findCards(args.file)
-        print "Number rects found = ", len(cardRects)
-        for c in cardRects:
-            print(c)
+    # if a directory is given, recurse over all files in a directory
+    files = []
+    if os.path.isfile(args.file):
+        files = [args.file]
+    elif os.path.isdir(args.file):
+        dirname = args.file
+        files = [f for f in os.listdir(dirname) if f.endswith('.png')]
+        files = map(lambda f: os.path.join(dirname, f), files)
+
+    for f in files:
+        if args.cv_type == 'analyze':
+            out = analyze(f, do_display=args.display)
+            print "Analysis of '{}':".format(f)
+            print(out)
+        else:
+            cardRects = findCards(f)
+            print "Number rects found = ", len(cardRects)
+            for c in cardRects:
+                print(c)
