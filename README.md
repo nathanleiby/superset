@@ -1,6 +1,56 @@
 Superset
 ====
 
+## Setup
+
+### Python Setup
+
+Make a virtual env.
+Install requirements.
+
+```
+mkvirtualenv superset
+make deps
+```
+
+### OpenCV2 Setup
+
+Followed these steps http://www.learnopencv.com/install-opencv-3-on-yosemite-osx-10-10-x/
+
+Install OpenCV 2 on Mac OSX
+
+```
+brew tap homebrew/science
+brew install opencv
+```
+
+Because running in a Python Virtualenv, we need to get access to OpenCV (installed as a system package). This is possible to do by creating a few symlinks.
+
+```
+ln /usr/local/lib/python2.7/site-packages/cv.py cv.py
+ln /usr/local/lib/python2.7/site-packages/cv2.so cv2.so
+```
+
+Alternately, could try setting up a Virtualenv with the `--system-site-packages` flag.
+
+## Tests
+
+```
+make test
+```
+
+## Running locally
+
+```
+make run
+```
+
+-----------
+
+## TODOS
+
+- `count` detection is less reliabe for diamonds and shaded
+
 ## Ideas to Explore
 
 - Template matching
@@ -17,38 +67,3 @@ Superset
 	- http://docs.opencv.org/2.4/doc/tutorials/imgproc/imgtrans/hough_circle/hough_circle.html#hough-circle
 - OpenCV Python examples
 	- https://github.com/opencv/opencv/tree/master/samples/python
-
-## TODOS
-
-- `count` detection is less reliabe for diamonds and shaded
-- add datasets (to GH repo or in Dropbox/GDrive)
-
-## Setup
-
-**Python Setup**
-
-Make a virtual env.
-Install requirements.
-
-```
-mkvirtualenv superset
-pip install -r requirements.txt
-```
-
-**OpenCV2 Setup**
-
-Followed these steps http://www.learnopencv.com/install-opencv-3-on-yosemite-osx-10-10-x/
-
-Install OpenCV 2 on Mac OSX
-
-```
-brew tap homebrew/science
-brew install opencv
-```
-
-Set up so Python can import by creating a couple of symlinks.
-
-```
-ln /usr/local/lib/python2.7/site-packages/cv.py cv.py
-ln /usr/local/lib/python2.7/site-packages/cv2.so cv2.so
-```

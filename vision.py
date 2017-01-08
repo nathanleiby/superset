@@ -7,12 +7,10 @@ import matplotlib.pyplot as plt
 import os
 
 DO_DISPLAY = False
-# DO_DISPLAY = True
-
-# Show images on a plot
 
 
 def display(img_defs):
+    """ Show images on a plot """
     plt.figure(figsize=(10, 10))
     horiz = len(img_defs) / 2 + 1
     for idx, i in enumerate(img_defs):
@@ -28,6 +26,8 @@ def display(img_defs):
 
 
 def normalize_colors(I):
+    """ Because images are taken in different light, we need to normalize the
+    color balance """
     In = I.astype(float)
     II = In ** 2
     II = np.sum(II, axis=2)
@@ -228,6 +228,8 @@ COLOR_LIST = [
 
 
 def findCards(fullpath):
+    """ Given a filepath to a photo containing set cards,
+    return a list of rectangles that outline each card """
     threshold = 115
     defs = []
     I = cv2.imread(fullpath)
@@ -299,6 +301,9 @@ def findCards(fullpath):
 
 
 if __name__ == "__main__":
+    # TODO: take args to:
+    #   - do run of single cards vs mutliple cards ('game')
+    #   - display analysis in separate window
     SINGLE = False
     if SINGLE:
         # single card analysis
