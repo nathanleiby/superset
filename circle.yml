@@ -5,12 +5,9 @@ dependencies:
     - sudo apt-get -y install cmake libeigen3-dev
     - sudo apt-get -y install opencl-headers libtbb-dev
     - sudo apt-get -y install libjpeg-dev libjasper-dev libpng++-dev libtiff-dev libopenexr-dev libwebp-dev
-    - bash install-opencv-2.4.12.sh
+    - sudo apt-get install -y libopencv-dev
   post:
     - bash print_cv_version.sh
-  cache_directories:
-    - 2.4.12.tar.gz
-    - /usr/local/include/opencv2
 
 test:
   override:
