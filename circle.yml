@@ -13,4 +13,4 @@ dependencies:
 
 test:
   override:
-      - echo "no tests"
+    - python vision_test.py -v
