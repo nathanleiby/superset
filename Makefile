@@ -12,7 +12,7 @@ lint: deps
 	pep8 --config ./pep8 . || true
 
 format: deps
-	autopep8 -i -r -j0 -a --experimental --max-line-length 100 --indent-size 2 .
+	autopep8 -i -r -j0 -a --experimental .
 
 # nose test-runner
 nose:
