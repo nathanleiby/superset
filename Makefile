@@ -18,4 +18,3 @@ test: deps lint nose
 
 run: deps
 	python game.py
-	python vision.py
