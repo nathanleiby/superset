@@ -2,24 +2,20 @@ SHELL := /bin/bash
 .PHONY: test deps lint format
 
 deps:
-	pip install -r requirements-dev.txt
-
-# Check for errors in Python files
-pylint: deps
-	find . | grep .py$$ | xargs pylint -E
+	pip install -q -r requirements-dev.txt
 
 lint: deps
-	pep8 --config ./pep8 . || true
+	flake8
 
 format: deps
 	autopep8 -i -r -j0 -a --experimental .
 
 # nose test-runner
-nose:
+nose: deps
 	nosetests .
 
-test: deps pylint nose
+test: deps lint nose
 
-run:
+run: deps
 	python main.py
 	python vision.py

@@ -1,5 +1,4 @@
 import numpy as np
-import numpy
 import cv2
 import matplotlib
 matplotlib.use('Agg')
@@ -46,7 +45,7 @@ def to_bw(img):
     threshold = 130  # TODO: May need to adjust. 115 result in all-black
     GRAY = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     BW = cv2.threshold(GRAY, threshold, 255, cv2.THRESH_BINARY)[1]
-    return numpy.invert(BW)
+    return np.invert(BW)
 
 
 def detect_count(img_bw):
@@ -54,10 +53,10 @@ def detect_count(img_bw):
     cntrs, hircy = cv2.findContours(BWt,
                                     cv2.RETR_EXTERNAL,    # cv2.RETR_TREE,
                                     cv2.CHAIN_APPROX_SIMPLE)
-    F = numpy.zeros(img_bw.shape, dtype=numpy.uint8)
-    MASK = numpy.zeros(img_bw.shape, dtype=numpy.uint8)
+    F = np.zeros(img_bw.shape, dtype=np.uint8)
+    MASK = np.zeros(img_bw.shape, dtype=np.uint8)
     areas = [cv2.contourArea(cnt) for cnt in cntrs]
-    t = numpy.mean(filter(lambda x: x > 50, areas))
+    t = np.mean(filter(lambda x: x > 50, areas))
     t = t * 0.9
     MASKrect = None
     MASKcnt = None
@@ -72,8 +71,8 @@ def detect_count(img_bw):
                 MASKcnt = cnt
                 MASKrect = cv2.boundingRect(cnt)
 
-    #cv2.imshow('Count', F)
-    #cv2.imshow('Mask', self.MASK)
+    # cv2.imshow('Count', F)
+    # cv2.imshow('Mask', self.MASK)
     cntrs, hircy = cv2.findContours(F,
                                     cv2.RETR_EXTERNAL,
                                     cv2.CHAIN_APPROX_SIMPLE)
@@ -97,9 +96,9 @@ def cut_masks(img, img_bw, img_mask, mask_rect):
 def find_shading(cut_bw, cut_mask):
     S = cv2.bitwise_and(cut_bw, cut_mask)
     E = cv2.Canny(S, 90, 200, apertureSize=3)
-    #cv2.imshow('Edge', E)
-    nE = numpy.count_nonzero(E)
-    nM = numpy.count_nonzero(cut_mask)
+    # cv2.imshow('Edge', E)
+    nE = np.count_nonzero(E)
+    nM = np.count_nonzero(cut_mask)
     dEM = float(nE) / float(nM)
     # print "Mask %d, Edge %d, div %f" % (nM, nE, dEM)
     shading = ""
@@ -115,23 +114,23 @@ def find_shading(cut_bw, cut_mask):
 def find_shading2(img):
     # edges = cv2.Canny(img,100,200)
     edges = cv2.Canny(img, 100, 200, apertureSize=3)
-    nE = numpy.count_nonzero(edges)
+    nE = np.count_nonzero(edges)
     print "non-zero edges", nE
 
 
 def find_color(img, cut_i, cut_bw, cut_m):
     S = cv2.bitwise_and(cut_bw, cut_m)
     S = cv2.bitwise_and(cut_i, cut_i, mask=S)
-    #cv2.imshow('VS', S)
-    #ShowHist(S, self.cardInfo['color'])
+    # cv2.imshow('VS', S)
+    # ShowHist(S, self.cardInfo['color'])
     HSV = cv2.cvtColor(S, cv2.COLOR_BGR2HSV)
     H = HSV[:, :, 0]
-    nG = numpy.count_nonzero(cv2.inRange(H, 25, 90))
-    nP = numpy.count_nonzero(cv2.inRange(H, 140, 170))
-    nR = numpy.count_nonzero(cv2.inRange(H, 170, 255))
+    nG = np.count_nonzero(cv2.inRange(H, 25, 90))
+    nP = np.count_nonzero(cv2.inRange(H, 140, 170))
+    nR = np.count_nonzero(cv2.inRange(H, 170, 255))
     C = ['red', 'green', 'purple']
     nC = [nR, nG, nP]
-    i = numpy.argmax(nC)
+    i = np.argmax(nC)
     return C[i]
 
 
@@ -170,8 +169,8 @@ def analyze(image_path, expected=None):
 
     # find count
     # TODO: separate mask creation from counting?
-    # TODO: Determine why 'detect_count' is failing to return masks in some cases
-    #     -> happens if no `areas` found in `detect_count`
+    # TODO: Determine why 'detect_count' is failing to return masks in some
+    # cases -> happens if no `areas` found in `detect_count`
     count, img_mask, mask_rect, mask_cnt = detect_count(img_bw)
     cut_i, cut_bw, cut_m = cut_masks(img, img_bw, img_mask, mask_rect)
 
@@ -185,7 +184,8 @@ def analyze(image_path, expected=None):
         error = False
         for k, v in expected.iteritems():
             if actual.get(k) != v:
-                print "\t{}: actual = {} (expected = {})".format(k, actual[k], expected[k])
+                tmpl = "\t{}: actual = {} (expected = {})"
+                print tmpl.format(k, actual[k], expected[k])
 
     print ""
 
@@ -234,7 +234,7 @@ def findCards(fullpath):
     defs.append(dict(title='original', image=I))
 
     # expected dimensions before: 2000px x 3000px
-    I = cv2.resize(numpy.rot90(I), (0, 0,), fx=0.5, fy=0.5)
+    I = cv2.resize(np.rot90(I), (0, 0,), fx=0.5, fy=0.5)
     defs.append(dict(title='rotated', image=I))
 
     GRAY = cv2.cvtColor(I, cv2.COLOR_BGR2GRAY)
@@ -244,16 +244,16 @@ def findCards(fullpath):
 
     defs.append(dict(title='bw', image=BW))
 
-    #BW = numpy.invert(BW)
+    # BW = np.invert(BW)
     BWt = BW.copy()
     cntrs, hircy = cv2.findContours(BWt,
                                     cv2.RETR_EXTERNAL,    # cv2.RETR_TREE,
                                     cv2.CHAIN_APPROX_SIMPLE)
-    F = numpy.zeros(BW.shape, dtype=numpy.uint8)
-    # MASK = numpy.zeros(BW.shape, dtype=numpy.uint8)
+    F = np.zeros(BW.shape, dtype=np.uint8)
+    # MASK = np.zeros(BW.shape, dtype=np.uint8)
     areas = [cv2.contourArea(cnt) for cnt in cntrs]
-    t = numpy.mean(filter(lambda x: x > 50, areas))
-    t = t * 0.50  # decreasing from .9 to .5 made this work better with a tilted image
+    t = np.mean(filter(lambda x: x > 50, areas))
+    t = t * 0.50  # decreasing from .9 to .5 works better with a tilted image
     # MASKrect = None
     # MASKcnt = None
     # wasMasked = False
@@ -314,16 +314,3 @@ if __name__ == "__main__":
         for i in [1, 2, 3]:
             fullpath = os.path.join(dirname, "game00{}.jpg".format(i))
             findCards(fullpath)
-
-       #  try:
-        # analyze(fullpath, expected)
-    # except Exception as e:
-        # print "failed to analyze"
-        # print e
-    # analyze("images/single-card/green-oval.png")
-
-# k = cv2.waitKey(0)
-# if k == 27:         # wait for ESC key to exit
-    # cv2.destroyAllWindows()
-# only closes plot from GUI
-# plt.show()
