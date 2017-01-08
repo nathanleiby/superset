@@ -34,23 +34,13 @@ class TestVision(unittest.TestCase):
     def test_single_card(self):
         """ Verify vision can analyze a single card """
         dirname='./images/single-card/'
-        errors = ["foo",]
-        total = 0
         for filename in os.listdir(dirname):
           if not filename.endswith('.png'):
             continue
           fullpath = os.path.join(dirname, filename)
           expected = vision.determine_expected(filename)
           actual = vision.analyze(fullpath, expected)
-          if expected != actual:
-            errors.append(filename)
-
-          # self.assertDictEqual(actual, expected)
-
-        if len(errors) > 0:
-          self.assertTrue(len(errors) == 0, "Errors: {}".format(errors))
-
-
+          self.assertDictEqual(actual, expected)
 
 if __name__ == '__main__':
     unittest.main()
