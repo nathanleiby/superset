@@ -5,10 +5,6 @@ import vision
 
 
 class TestVision(unittest.TestCase):
-
-    def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FOO')
-
     def test_game(self):
         """ Verify vision can extract multiple cards out of full game view """
         dirname = './images/game/'
@@ -42,6 +38,7 @@ class TestVision(unittest.TestCase):
             expected = vision.determine_expected(filename)
             actual = vision.analyze(fullpath, expected)
             self.assertDictEqual(actual, expected)
+
 
 if __name__ == '__main__':
     unittest.main()

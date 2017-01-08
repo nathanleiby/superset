@@ -13,7 +13,7 @@ DO_DISPLAY = False
 
 
 def display(img_defs):
-    fig = plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(10, 10))
     horiz = len(img_defs) / 2 + 1
     for idx, i in enumerate(img_defs):
         plt.subplot(horiz, 2, idx + 1)
@@ -181,7 +181,6 @@ def analyze(image_path, expected=None):
 
     # Compare actual results VS expected results
     if expected:
-        error = False
         for k, v in expected.iteritems():
             if actual.get(k) != v:
                 tmpl = "\t{}: actual = {} (expected = {})"
@@ -216,6 +215,7 @@ def determine_expected(filename):
     color, shading, shape, count = name.split('-')
     count = int(count)
     return dict(color=color, shading=shading, shape=shape, count=count)
+
 
 COLOR_LIST = [
     (0, 0, 255),
@@ -296,6 +296,7 @@ def findCards(fullpath):
     # display(defs)
     # return 12 sliced images, to pass to single card analysis
     return cardRects
+
 
 if __name__ == "__main__":
     SINGLE = False
