@@ -1,8 +1,9 @@
-# from https://github.com/lessons-of-k4zzk/lessons-opencv/tree/3225754c14a2408b058a30a214e6d7116541ad07
 dependencies:
   pre:
     - sudo apt-get -y update
-    - sudo apt-get install -y python-opencv libopencv-dev python-numpy python-dev
+    - sudo apt-get install -y python-opencv
+    # copy opencv (cv.so, cv2.py) to the virtualenv
+    - cp /usr/lib/python2.7/dist-packages/cv* $VIRTUAL_ENV/lib/python2.7/site-packages/
   post:
     - bash print_cv_version.sh
 
