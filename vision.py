@@ -111,7 +111,7 @@ def find_shading(cut_bw, cut_mask):
     logger.debug('dEM={}'.format(dEM))
     # print "Mask %d, Edge %d, div %f" % (nM, nE, dEM)
     shading = 'open'
-    if (dEM < 0.03):
+    if (dEM < 0.026):
         shading = 'full'  # solid
     elif (dEM > 0.10):
         shading = 'striped'
