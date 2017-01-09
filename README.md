@@ -46,19 +46,24 @@ make run
 ```
 
 
-**Find** all cards in an image:
+**Detect cards**
+
+Find all cards in an image:
 
 ```
 python vision.py -c find -f images/game/game001.jpg
 ```
 
-**Analyze** a single card:
+
+**Analyze features**
+
+Analyze a single card:
 
 ```
 python vision.py -c analyze -f images/single-card/green-full-oval-1.png
 ```
 
-You can pass the `--display` flag to open a window with images analsis steps.
+You can pass the `--display` flag to open a window with images analysis steps.
 
 ```
 python vision.py -c analyze -f images/single-card/green-full-oval-1.png --display
@@ -75,14 +80,16 @@ python vision.py -c analyze -f images/single-card/
 
 ## TODOS
 
-- `count` detection is less reliabe for diamonds and shaded
-- common errors
-    - open -> full
-    - striped -> open
-    - oval -> diamond
+- add more images, and continue tuning algorithm
+- rename fns to better explain the pipeline of steps
+    - detection - find card shaped items in an image
+    - classifaction - is it a card?
+    - feature extraction - given a card, what are its features (shape, number, etc)?
 
 ## Ideas to Explore
 
+- morphology ex (for estimated rectangle shape of set cards)
+    - http://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#createmorphologyfilter
 - Template matching
     - http://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/template_matching/template_matching.html
 	- http://docs.opencv.org/3.1.0/d4/dc6/tutorial_py_template_matching.html
