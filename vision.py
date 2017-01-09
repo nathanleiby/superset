@@ -142,12 +142,14 @@ def find_color(img, cut_i, cut_bw, cut_m):
 
 
 def find_shape(mask_cnt):
+    logger.debug("Determining shape...")
     cnt = mask_cnt
     mmnts = cv2.moments(cnt)
     hu = cv2.HuMoments(mmnts)
+    logger.debug("Hu moments - first: {}".format(hu[0]))
     # print cv2.contourArea(cnt)
     symbol = ""
-    if (hu[0] < 0.207):
+    if (hu[0] < 0.210):
         symbol = 'oval'
     elif (hu[0] > 0.23):
         symbol = 'squiggle'
