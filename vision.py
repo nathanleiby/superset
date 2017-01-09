@@ -1,5 +1,8 @@
 import os
 import sys
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 import argparse
 import cv2
@@ -8,6 +11,7 @@ if os.getenv("MATPLOTLIB_USE_AGG"):
     matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+
 
 DO_DISPLAY = False
 
@@ -97,20 +101,20 @@ def cut_masks(img, img_bw, img_mask, mask_rect):
 
 
 def find_shading(cut_bw, cut_mask):
+    logger.debug('Attempting to determine shading...')
     S = cv2.bitwise_and(cut_bw, cut_mask)
     E = cv2.Canny(S, 90, 200, apertureSize=3)
     # cv2.imshow('Edge', E)
     nE = np.count_nonzero(E)
     nM = np.count_nonzero(cut_mask)
     dEM = float(nE) / float(nM)
+    logger.debug('dEM={}'.format(dEM))
     # print "Mask %d, Edge %d, div %f" % (nM, nE, dEM)
-    shading = ""
-    if (dEM < 0.08):
+    shading = 'open'
+    if (dEM < 0.03):
         shading = 'full'  # solid
-    elif (dEM > 0.17):
+    elif (dEM > 0.10):
         shading = 'striped'
-    else:
-        shading = 'open'
     return shading
 
 
@@ -329,10 +333,10 @@ if __name__ == "__main__":
     for f in files:
         if args.cv_type == 'analyze':
             out = analyze(f, do_display=args.display)
-            print "Analysis of '{}':".format(f)
-            print(out)
+            logger.info("Analysis of '{}':".format(f))
+            logger.info(out)
         else:
             cardRects = findCards(f)
-            print "Number rects found = ", len(cardRects)
+            logger.info("Number rects found = ", len(cardRects))
             for c in cardRects:
-                print(c)
+                logger.info(c)

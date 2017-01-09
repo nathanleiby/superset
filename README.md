@@ -76,6 +76,10 @@ python vision.py -c analyze -f images/single-card/
 ## TODOS
 
 - `count` detection is less reliabe for diamonds and shaded
+- common errors
+    - open -> full
+    - striped -> open
+    - oval -> diamond
 
 ## Ideas to Explore
 
